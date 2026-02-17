@@ -176,6 +176,8 @@ jobs:
       image: ubuntu:24.04
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
+      release: ${{ steps.version.outputs.RELEASE }}
+      tag: ${{ steps.version.outputs.TAG }}
 
     steps:
       - name: Install build dependencies
@@ -444,7 +446,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
           git commit -m "Update DEB repository"
           # Pull with rebase to handle concurrent pushes
           git pull --rebase "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages || true
