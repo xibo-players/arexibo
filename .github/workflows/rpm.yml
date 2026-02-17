@@ -20,21 +20,9 @@ jobs:
     container:
       image: fedora:43
     outputs:
-      version: ${{ steps.version.outputs.VERSION }}
-      release: ${{ steps.version.outputs.RELEASE }}
-      tag: ${{ steps.version.outputs.TAG }}
+      version: ${{ steps.version.outputs.version }}
 
     steps:
-      - name: Install build dependencies
-        run: |
-          dnf install -y \
-            git \
-            rust cargo \
-            cmake gcc-c++ \
-            dbus-devel zeromq-devel \
-            qt6-qtwebengine-devel \
-            rpm-build rpmdevtools
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -53,52 +41,26 @@ jobs:
         id: version
         run: |
           if [ -n "${{ github.event.inputs.version }}" ]; then
-            TAG="${{ github.event.inputs.version }}"
+            VERSION="${{ github.event.inputs.version }}"
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            TAG="${GITHUB_REF#refs/tags/v}"
+            VERSION="${GITHUB_REF#refs/tags/v}"
           else
-            TAG="0.3.1"
+            VERSION="0.3.1"
           fi
-          echo "VERSION=${TAG%%-*}" >> $GITHUB_OUTPUT
-          if [[ "$TAG" == *-* ]]; then
-            echo "RELEASE=${TAG#*-}" >> $GITHUB_OUTPUT
-          else
-            echo "RELEASE=1" >> $GITHUB_OUTPUT
-          fi
-          echo "TAG=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Setup rpmbuild directories
-        run: mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-
-      - name: Create source tarball
+      - name: Build RPM using script
         run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          mkdir -p arexibo-${VERSION}
-          cp -r * arexibo-${VERSION}/ 2>/dev/null || true
-          tar -czf ~/rpmbuild/SOURCES/arexibo-${VERSION}.tar.gz arexibo-${VERSION}
-          rm -rf arexibo-${VERSION}
-
-      - name: Copy spec file
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          RELEASE=${{ steps.version.outputs.RELEASE }}
-          sed -e "s/^Version:.*/Version:        ${VERSION}/" \
-              -e "s/^Release:.*/Release:        ${RELEASE}%{?dist}/" \
-              rpm/arexibo.spec > ~/rpmbuild/SPECS/arexibo.spec
-
-      - name: Build RPM
-        run: rpmbuild -bb ~/rpmbuild/SPECS/arexibo.spec
+          chmod +x rpm/build-rpm.sh
+          ./rpm/build-rpm.sh "${{ steps.version.outputs.version }}"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-
-      - name: List built RPMs
-        run: find ~/rpmbuild/RPMS -name "*.rpm" -ls
 
       - name: Upload RPM
         uses: actions/upload-artifact@v4
         with:
           name: rpms-x86_64
-          path: ~/rpmbuild/RPMS/**/*.rpm
+          path: dist/*.rpm
           retention-days: 30
 
   build-rpm-aarch64:
@@ -106,19 +68,9 @@ jobs:
     container:
       image: fedora:43
     outputs:
-      version: ${{ steps.version.outputs.VERSION }}
+      version: ${{ steps.version.outputs.version }}
 
     steps:
-      - name: Install build dependencies
-        run: |
-          dnf install -y \
-            git \
-            rust cargo \
-            cmake gcc-c++ \
-            dbus-devel zeromq-devel \
-            qt6-qtwebengine-devel \
-            rpm-build rpmdevtools
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -137,51 +89,26 @@ jobs:
         id: version
         run: |
           if [ -n "${{ github.event.inputs.version }}" ]; then
-            TAG="${{ github.event.inputs.version }}"
+            VERSION="${{ github.event.inputs.version }}"
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            TAG="${GITHUB_REF#refs/tags/v}"
+            VERSION="${GITHUB_REF#refs/tags/v}"
           else
-            TAG="0.3.1"
+            VERSION="0.3.1"
           fi
-          echo "VERSION=${TAG%%-*}" >> $GITHUB_OUTPUT
-          if [[ "$TAG" == *-* ]]; then
-            echo "RELEASE=${TAG#*-}" >> $GITHUB_OUTPUT
-          else
-            echo "RELEASE=1" >> $GITHUB_OUTPUT
-          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Setup rpmbuild directories
-        run: mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-
-      - name: Create source tarball
+      - name: Build RPM using script
         run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          mkdir -p arexibo-${VERSION}
-          cp -r * arexibo-${VERSION}/ 2>/dev/null || true
-          tar -czf ~/rpmbuild/SOURCES/arexibo-${VERSION}.tar.gz arexibo-${VERSION}
-          rm -rf arexibo-${VERSION}
-
-      - name: Copy spec file
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          RELEASE=${{ steps.version.outputs.RELEASE }}
-          sed -e "s/^Version:.*/Version:        ${VERSION}/" \
-              -e "s/^Release:.*/Release:        ${RELEASE}%{?dist}/" \
-              rpm/arexibo.spec > ~/rpmbuild/SPECS/arexibo.spec
-
-      - name: Build RPM
-        run: rpmbuild -bb ~/rpmbuild/SPECS/arexibo.spec
+          chmod +x rpm/build-rpm.sh
+          ./rpm/build-rpm.sh "${{ steps.version.outputs.version }}"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-
-      - name: List built RPMs
-        run: find ~/rpmbuild/RPMS -name "*.rpm" -ls
 
       - name: Upload RPM
         uses: actions/upload-artifact@v4
         with:
           name: rpms-aarch64
-          path: ~/rpmbuild/RPMS/**/*.rpm
+          path: dist/*.rpm
           retention-days: 30
 
   publish-repo:
