@@ -17,7 +17,8 @@ const intptr_t CB_COMMAND     = 6;
 const intptr_t CB_SHELL       = 7;
 const intptr_t CB_STOPSHELL   = 8;
 
-void setup(const char *base_uri, int inspect, int debug, callback cb, void *cb_ptr);
+void setup(const char *base_uri, const char *screen,
+           int inspect, int debug, callback cb, void *cb_ptr);
 void run();
 void navigate(const char *file);
 void screenshot();

@@ -41,6 +41,11 @@ struct Args {
     /// URL for a proxy server for HTTP/XMDS requests.
     #[arg(long)]
     proxy: Option<String>,
+    /// Specify the screen to show Arexibo on.
+    /// Can be a number (starting from 1) or a name.  For a list of
+    /// screens currently connected, pass "list".
+    #[arg(long)]
+    screen: Option<String>,
     /// Show web inspector to debug layout problems.
     #[arg(long)]
     inspect: bool,
@@ -123,6 +128,7 @@ fn main_inner() -> anyhow::Result<()> {
 
     std::thread::spawn(|| handler.run());
 
-    gui::run(settings, args.inspect, args.web_debug, togui_rx, fromgui_tx);
+    gui::run(settings, args.screen.unwrap_or_default(), args.inspect,
+             args.web_debug, togui_rx, fromgui_tx);
     Ok(())
 }

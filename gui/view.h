@@ -2,6 +2,7 @@
 #define AREXIBO_VIEW_H
 
 #include <QMainWindow>
+#include <QScreen>
 #include <QtWebEngineWidgets/QWebEngineView>
 #include <QtWebChannel/QWebChannel>
 #include <iostream>
@@ -14,12 +15,13 @@ class Window : public QMainWindow
     friend class JSInterface;
 
 public:
-    Window(QString, int, callback, void *);
+    Window(QString, QScreen *, int, callback, void *);
 
 private:
     QWebEngineView *view;
     QWebChannel *channel;
     QString base_uri;
+    QScreen *selected_screen;
 
     callback cb;
     void *cb_ptr;

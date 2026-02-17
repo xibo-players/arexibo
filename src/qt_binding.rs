@@ -20,6 +20,7 @@ pub const CB_STOPSHELL: isize = 8;
 extern "C" {
     pub fn setup(
         base_uri: *const ::std::os::raw::c_char,
+        screen: *const ::std::os::raw::c_char,
         inspect: ::std::os::raw::c_int,
         debug: ::std::os::raw::c_int,
         cb: callback,

@@ -20,7 +20,7 @@ struct CallbackData {
     schedule: Arc<Mutex<Schedule<LayoutId>>>,
 }
 
-pub fn run(settings: PlayerSettings, inspect: bool, debug: bool,
+pub fn run(settings: PlayerSettings, screen: String, inspect: bool, debug: bool,
            togui: Receiver<ToGui>, fromgui: Sender<FromGui>) {
     let base_uri = format!("http://localhost:{}/", settings.embedded_server_port);
     let fromgui_2 = fromgui.clone();
@@ -32,8 +32,10 @@ pub fn run(settings: PlayerSettings, inspect: bool, debug: bool,
 
     let title = CString::new(settings.display_name).unwrap();
     let base_uri = CString::new(base_uri).unwrap();
+    let screen = CString::new(screen).unwrap();
     unsafe {
-        cpp::setup(base_uri.as_ptr(), inspect.into(), debug.into(), Some(callback), cb_data);
+        cpp::setup(base_uri.as_ptr(), screen.as_ptr(),
+                   inspect.into(), debug.into(), Some(callback), cb_data);
         cpp::set_title(title.as_ptr());
         cpp::set_size(settings.pos_x as _, settings.pos_y as _,
                       settings.size_x as _, settings.size_y as _);
