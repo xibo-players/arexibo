@@ -112,7 +112,7 @@ jobs:
           install -m755 kiosk/xibo-keyd-run.sh deb-pkg/xibo-kiosk/usr/share/xibo-kiosk/
           install -m755 kiosk/xibo-show-ip.sh deb-pkg/xibo-kiosk/usr/share/xibo-kiosk/
           install -m755 kiosk/xibo-show-cms.sh deb-pkg/xibo-kiosk/usr/share/xibo-kiosk/
-          install -m644 kiosk/keyd-xibo.conf deb-pkg/xibo-kiosk/etc/keyd/arexibo.conf
+          install -m644 kiosk/keyd-xibo.conf deb-pkg/xibo-kiosk/etc/keyd/xibo.conf
 
       - name: Create control files
         run: |
