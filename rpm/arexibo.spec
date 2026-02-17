@@ -34,9 +34,8 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 cargo build --release
 
 %package        kiosk
-Summary:        Kiosk session scripts for Arexibo
+Summary:        Kiosk session scripts for Xibo players
 BuildArch:      noarch
-Requires:       %{name} = %{version}-%{release}
 Requires:       gnome-kiosk-script-session
 Requires:       dunst
 Requires:       unclutter
@@ -46,25 +45,32 @@ Requires:       keyd
 Requires:       mesa-va-drivers
 Requires:       libva
 Recommends:     libva-intel-driver
+Provides:       xibo-kiosk = %{version}-%{release}
+Provides:       arexibo-kiosk = %{version}-%{release}
 
 %description    kiosk
-Kiosk session scripts for running Arexibo as a full-screen digital signage
-player under GNOME Kiosk. Includes a first-boot registration wizard,
+Kiosk session scripts for running Xibo digital signage players as full-screen 
+displays under GNOME Kiosk. Includes a first-boot registration wizard,
 session holder with health monitoring, dunst notification config, and
 a systemd user unit for the player process.
+
+Supports multiple Xibo player implementations:
+- arexibo (Rust-based)
+- xiboplayer-electron (@xibo-players/xiboplayer-electron)
+- xiboplayer-chromium (@xibo-players/xiboplayer-chromium)
 
 %install
 install -Dm755 target/release/arexibo %{buildroot}%{_bindir}/arexibo
 
 # Kiosk scripts
-install -Dm755 kiosk/gnome-kiosk-script.arexibo.sh %{buildroot}%{_datadir}/arexibo/kiosk/gnome-kiosk-script.arexibo.sh
-install -Dm755 kiosk/gnome-kiosk-script.zenity.init.sh %{buildroot}%{_datadir}/arexibo/kiosk/gnome-kiosk-script.zenity.init.sh
-install -Dm644 kiosk/dunstrc %{buildroot}%{_datadir}/arexibo/kiosk/dunstrc
-install -Dm644 kiosk/arexibo-player.service %{buildroot}%{_userunitdir}/arexibo-player.service
-install -Dm755 kiosk/arexibo-keyd-run.sh %{buildroot}%{_datadir}/arexibo/kiosk/arexibo-keyd-run.sh
-install -Dm755 kiosk/arexibo-show-ip.sh %{buildroot}%{_datadir}/arexibo/kiosk/arexibo-show-ip.sh
-install -Dm755 kiosk/arexibo-show-cms.sh %{buildroot}%{_datadir}/arexibo/kiosk/arexibo-show-cms.sh
-install -Dm644 kiosk/keyd-arexibo.conf %{buildroot}%{_sysconfdir}/keyd/arexibo.conf
+install -Dm755 kiosk/gnome-kiosk-script.xibo.sh %{buildroot}%{_datadir}/xibo-kiosk/gnome-kiosk-script.xibo.sh
+install -Dm755 kiosk/gnome-kiosk-script.xibo-init.sh %{buildroot}%{_datadir}/xibo-kiosk/gnome-kiosk-script.xibo-init.sh
+install -Dm644 kiosk/dunstrc %{buildroot}%{_datadir}/xibo-kiosk/dunstrc
+install -Dm644 kiosk/xibo-player.service %{buildroot}%{_userunitdir}/xibo-player.service
+install -Dm755 kiosk/xibo-keyd-run.sh %{buildroot}%{_datadir}/xibo-kiosk/xibo-keyd-run.sh
+install -Dm755 kiosk/xibo-show-ip.sh %{buildroot}%{_datadir}/xibo-kiosk/xibo-show-ip.sh
+install -Dm755 kiosk/xibo-show-cms.sh %{buildroot}%{_datadir}/xibo-kiosk/xibo-show-cms.sh
+install -Dm644 kiosk/keyd-xibo.conf %{buildroot}%{_sysconfdir}/keyd/xibo.conf
 
 %files
 %license LICENSE
@@ -72,16 +78,15 @@ install -Dm644 kiosk/keyd-arexibo.conf %{buildroot}%{_sysconfdir}/keyd/arexibo.c
 %{_bindir}/arexibo
 
 %files          kiosk
-%dir %{_datadir}/arexibo
-%dir %{_datadir}/arexibo/kiosk
-%{_datadir}/arexibo/kiosk/gnome-kiosk-script.arexibo.sh
-%{_datadir}/arexibo/kiosk/gnome-kiosk-script.zenity.init.sh
-%{_datadir}/arexibo/kiosk/dunstrc
-%{_datadir}/arexibo/kiosk/arexibo-keyd-run.sh
-%{_datadir}/arexibo/kiosk/arexibo-show-ip.sh
-%{_datadir}/arexibo/kiosk/arexibo-show-cms.sh
-%{_userunitdir}/arexibo-player.service
-%{_sysconfdir}/keyd/arexibo.conf
+%dir %{_datadir}/xibo-kiosk
+%{_datadir}/xibo-kiosk/gnome-kiosk-script.xibo.sh
+%{_datadir}/xibo-kiosk/gnome-kiosk-script.xibo-init.sh
+%{_datadir}/xibo-kiosk/dunstrc
+%{_datadir}/xibo-kiosk/xibo-keyd-run.sh
+%{_datadir}/xibo-kiosk/xibo-show-ip.sh
+%{_datadir}/xibo-kiosk/xibo-show-cms.sh
+%{_userunitdir}/xibo-player.service
+%{_sysconfdir}/keyd/xibo.conf
 
 %changelog
 * Mon Jan 27 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-2
