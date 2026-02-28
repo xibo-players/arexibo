@@ -35,11 +35,27 @@ cargo build --release
 
 %install
 install -Dm755 target/release/arexibo %{buildroot}%{_bindir}/arexibo
+install -Dm644 arexibo.desktop \
+    %{buildroot}%{_datadir}/applications/arexibo.desktop
+install -Dm644 assets/arexibo-256.png \
+    %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/arexibo.png
+
+%post
+touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+
+%postun
+if [ $1 -eq 0 ]; then
+    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
 
 %files
 %license LICENSE
 %doc README.md CHANGELOG.md
 %{_bindir}/arexibo
+%{_datadir}/applications/arexibo.desktop
+%{_datadir}/icons/hicolor/256x256/apps/arexibo.png
 
 %changelog
 * Tue Feb 18 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-1

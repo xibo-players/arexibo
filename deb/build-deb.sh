@@ -35,6 +35,12 @@ install -m644 LICENSE "${PKG_DIR}/usr/share/doc/arexibo/"
 install -m644 README.md "${PKG_DIR}/usr/share/doc/arexibo/"
 install -m644 CHANGELOG.md "${PKG_DIR}/usr/share/doc/arexibo/"
 
+# Desktop entry and icon
+mkdir -p "${PKG_DIR}/usr/share/applications"
+mkdir -p "${PKG_DIR}/usr/share/icons/hicolor/256x256/apps"
+install -m644 arexibo.desktop "${PKG_DIR}/usr/share/applications/arexibo.desktop"
+install -m644 assets/arexibo-256.png "${PKG_DIR}/usr/share/icons/hicolor/256x256/apps/arexibo.png"
+
 # Create control file
 cat > "${PKG_DIR}/DEBIAN/control" << EOF
 Package: arexibo
