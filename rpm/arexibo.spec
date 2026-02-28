@@ -2,7 +2,7 @@
 
 Name:           arexibo
 Version:        0.3.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Rust-based digital signage player for Xibo CMS
 
 License:        AGPLv3+
@@ -42,6 +42,9 @@ install -Dm755 target/release/arexibo %{buildroot}%{_bindir}/arexibo
 %{_bindir}/arexibo
 
 %changelog
+* Fri Feb 28 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-2
+- Install desktop entry and icon for proper desktop integration (closes #6)
+
 * Tue Feb 18 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-1
 - Clean rebuild: PDF support, NotAuthorized exit code, dependency updates
 - Thin workflow callers for RPM, DEB and image builds
