@@ -1,13 +1,16 @@
 #!/bin/bash
 # Build arexibo DEB package
-# Usage: ./deb/build-deb.sh <version>
+# Usage: ./deb/build-deb.sh <version> [release]
 set -euo pipefail
 
-VERSION="${1:?Usage: $0 <version>}"
+VERSION="${1:?Usage: $0 <version> [release]}"
 
 # Parse version-release (e.g. 0.3.1-2 → version=0.3.1, release=2)
+# $2 from shared workflow overrides parsed release
 BASE_VERSION="${VERSION%%-*}"
-if [[ "$VERSION" == *-* ]]; then
+if [[ -n "${2:-}" ]]; then
+  RELEASE="$2"
+elif [[ "$VERSION" == *-* ]]; then
   RELEASE="${VERSION#*-}"
 else
   RELEASE="1"
