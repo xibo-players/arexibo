@@ -2,7 +2,7 @@
 
 Name:           arexibo
 Version:        0.3.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Rust-based digital signage player for Xibo CMS
 
 License:        AGPLv3+
