@@ -14,6 +14,7 @@ jobs:
     with:
       package-name: arexibo
       deb-script: 'deb/build-deb.sh'
+      distro-matrix: '["ubuntu:24.04", "debian:trixie"]'
       arch-matrix: '["amd64", "arm64"]'
       extra-build-deps: 'cargo cmake g++ libdbus-1-dev libzmq3-dev qt6-webengine-dev libudev-dev pkg-config'
       gpg-sign: true
