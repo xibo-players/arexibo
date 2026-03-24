@@ -57,7 +57,7 @@ Description: Rust-based digital signage player for Xibo CMS
  Arexibo is a Rust-based digital signage player compatible with Xibo CMS.
  It provides a lightweight alternative to the official Xibo player,
  designed for kiosk and digital signage deployments on Linux.
-Homepage: https://github.com/linuxnow/arexibo
+Homepage: https://github.com/birkenfeld/arexibo
 EOF
 
 # Build DEB
