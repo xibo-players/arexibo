@@ -2,7 +2,7 @@
 
 Name:           arexibo
 Version:        0.3.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Rust-based digital signage player for Xibo CMS
 
 License:        AGPLv3+
@@ -51,6 +51,9 @@ install -Dm644 assets/logo.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/ap
 * Wed Mar 12 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-4
 - Install desktop entry and icon in RPM and DEB packages
 - Merge upstream dependency updates
+
+* Sat Mar 29 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.3-2
+- Rebuild for Fedora 44
 
 * Sun Mar 23 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.3-1
 - Sync with upstream v0.3.3
