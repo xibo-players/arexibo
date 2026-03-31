@@ -9,6 +9,4 @@ jobs:
     uses: xibo-players/.github/.github/workflows/create-release.yml@main
     with:
       package-name: arexibo
-      rpm-arch: 'x86_64+aarch64'
-      deb-arch: 'amd64+arm64'
       description: 'Minimal native Xibo digital signage player written in Rust.'
