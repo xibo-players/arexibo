@@ -55,7 +55,7 @@ subprocess = "<=0.2.9"
 base64ct = "~1.6"
 rayon = "~1.10"
 rayon-core = "~1.12"
-indexmap = "~2.11"
+indexmap = "~2.13"
 
 [build-dependencies]
 cmake = "0.1"
