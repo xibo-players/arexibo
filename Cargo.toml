@@ -54,7 +54,7 @@ subprocess = "<=0.2.9"
 # MSRV
 base64ct = "~1.6"
 rayon = "~1.10"
-rayon-core = "~1.12"
+rayon-core = "~1.13"
 indexmap = "~2.11"
 
 [build-dependencies]
