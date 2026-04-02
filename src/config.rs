@@ -81,6 +81,7 @@ impl CmsSettings {
         hex::encode(Md5::digest(to_hash))
     }
 
+    /// Deterministic XMR channel ID: MD5(address + key + display_id)
     pub fn make_agent(&self, no_verify: bool) -> Result<ureq::Agent> {
         let tls_config = ureq::tls::TlsConfig::builder()
             .disable_verification(no_verify)
@@ -95,5 +96,97 @@ impl CmsSettings {
             .tls_config(tls_config)
             .proxy(proxy)
             .build().into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn player_settings_defaults() {
+        let s: PlayerSettings = serde_json::from_str("{}").unwrap();
+        assert_eq!(s.collect_interval, 900);
+        assert_eq!(s.log_level, "debug");
+        assert_eq!(s.embedded_server_port, 9696);
+        assert_eq!(s.display_name, "Xibo");
+        assert!(!s.stats_enabled);
+        assert!(!s.prevent_sleep);
+    }
+
+    #[test]
+    fn player_settings_custom_values() {
+        let json = r#"{"collect_interval": 60, "stats_enabled": true, "display_name": "Lobby"}"#;
+        let s: PlayerSettings = serde_json::from_str(json).unwrap();
+        assert_eq!(s.collect_interval, 60);
+        assert!(s.stats_enabled);
+        assert_eq!(s.display_name, "Lobby");
+        // defaults for unspecified fields
+        assert_eq!(s.log_level, "debug");
+    }
+
+    #[test]
+    fn player_settings_roundtrip() {
+        let original = PlayerSettings {
+            collect_interval: 300,
+            stats_enabled: true,
+            log_level: "info".into(),
+            display_name: "Test Display".into(),
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let parsed: PlayerSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, parsed);
+    }
+
+    #[test]
+    fn cms_settings_xmr_channel_deterministic() {
+        let cms = CmsSettings {
+            address: "https://cms.example.com".into(),
+            key: "secret123".into(),
+            display_id: "abc-def".into(),
+            display_name: None,
+            proxy: None,
+        };
+        let ch1 = cms.xmr_channel();
+        let ch2 = cms.xmr_channel();
+        assert_eq!(ch1, ch2);
+        assert_eq!(ch1.len(), 32); // MD5 hex = 32 chars
+    }
+
+    #[test]
+    fn cms_settings_xmr_channel_varies() {
+        let cms1 = CmsSettings {
+            address: "https://a.com".into(),
+            key: "key1".into(),
+            display_id: "d1".into(),
+            display_name: None,
+            proxy: None,
+        };
+        let cms2 = CmsSettings {
+            address: "https://b.com".into(),
+            key: "key1".into(),
+            display_id: "d1".into(),
+            display_name: None,
+            proxy: None,
+        };
+        assert_ne!(cms1.xmr_channel(), cms2.xmr_channel());
+    }
+
+    #[test]
+    fn cms_settings_roundtrip_json() {
+        let cms = CmsSettings {
+            address: "https://cms.example.com".into(),
+            key: "secret".into(),
+            display_id: "xyz".into(),
+            display_name: Some("Reception".into()),
+            proxy: None,
+        };
+        let json = serde_json::to_string_pretty(&cms).unwrap();
+        let parsed: CmsSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.address, cms.address);
+        assert_eq!(parsed.key, cms.key);
+        assert_eq!(parsed.display_id, cms.display_id);
+        assert_eq!(parsed.display_name, cms.display_name);
     }
 }

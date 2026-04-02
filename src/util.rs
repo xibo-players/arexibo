@@ -200,3 +200,64 @@ pub fn timezone() -> String {
     }
     Default::default()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn percent_decode_basic() {
+        assert_eq!(percent_decode("hello%20world"), "hello world");
+    }
+
+    #[test]
+    fn percent_decode_plus() {
+        assert_eq!(percent_decode("hello+world"), "hello world");
+    }
+
+    #[test]
+    fn percent_decode_no_encoding() {
+        assert_eq!(percent_decode("hello"), "hello");
+    }
+
+    #[test]
+    fn percent_decode_special_chars() {
+        assert_eq!(percent_decode("%26amp%3B"), "&amp;");
+    }
+
+    #[test]
+    fn percent_decode_empty() {
+        assert_eq!(percent_decode(""), "");
+    }
+
+    #[test]
+    fn percent_decode_mixed() {
+        assert_eq!(percent_decode("a%20b+c%21d"), "a b c!d");
+    }
+
+    #[test]
+    fn base64_field_roundtrip() {
+        let data = vec![1, 2, 3, 255, 0];
+        let field = Base64Field(data.clone());
+        let encoded = field.to_string();
+        let decoded: Base64Field = encoded.parse().unwrap();
+        assert_eq!(decoded.0, data);
+    }
+
+    #[test]
+    fn base64_field_empty() {
+        let field = Base64Field(vec![]);
+        let encoded = field.to_string();
+        assert_eq!(encoded, "");
+        let decoded: Base64Field = encoded.parse().unwrap();
+        assert_eq!(decoded.0, Vec::<u8>::new());
+    }
+
+    #[test]
+    fn hex_roundtrip() {
+        let original = vec![0xDE, 0xAD, 0xBE, 0xEF];
+        let json = serde_json::to_string(&hex::encode(&original)).unwrap();
+        let back: String = serde_json::from_str(&json).unwrap();
+        assert_eq!(hex::decode(back).unwrap(), original);
+    }
+}

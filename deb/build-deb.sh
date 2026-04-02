@@ -34,9 +34,11 @@ mkdir -p "${PKG_DIR}/usr/share/doc/arexibo"
 mkdir -p "${PKG_DIR}/usr/share/applications"
 mkdir -p "${PKG_DIR}/usr/share/icons/hicolor/256x256/apps"
 mkdir -p "${PKG_DIR}/usr/share/icons/hicolor/scalable/apps"
+mkdir -p "${PKG_DIR}/usr/lib/systemd/user"
 
 # Install files
 install -m755 target/release/arexibo "${PKG_DIR}/usr/bin/arexibo"
+install -m644 arexibo.service "${PKG_DIR}/usr/lib/systemd/user/arexibo.service"
 install -m644 LICENSE "${PKG_DIR}/usr/share/doc/arexibo/"
 install -m644 README.md "${PKG_DIR}/usr/share/doc/arexibo/"
 install -m644 CHANGELOG.md "${PKG_DIR}/usr/share/doc/arexibo/"
