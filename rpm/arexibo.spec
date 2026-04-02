@@ -54,18 +54,17 @@ install -Dm644 arexibo.service %{buildroot}%{_userunitdir}/arexibo.service
 - Add arexibo.service systemd user unit
 - Add unit tests for config and util modules
 
-* Wed Mar 12 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-4
-- Install desktop entry and icon in RPM and DEB packages
-- Merge upstream dependency updates
-
 * Sat Mar 29 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.3-2
 - Rebuild for Fedora 44
 
 * Sun Mar 23 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.3-1
 - Sync with upstream v0.3.3
 
-* Fri Feb 28 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-2
-- Install desktop entry and icon for proper desktop integration (closes #6)
+* Wed Mar 12 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.1-4
+- Install desktop entry and icon in RPM and DEB packages
+
+* Fri Feb 28 2026 Pau Aliagas <linuxnow@gmail.com> - 0.3.1-2
+- Install desktop entry and icon for proper desktop integration
 
 * Tue Feb 18 2026 Pau Aliagas <pau@linuxnow.com> - 0.3.1-1
 - Clean rebuild: PDF support, NotAuthorized exit code, dependency updates
