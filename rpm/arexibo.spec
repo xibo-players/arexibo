@@ -38,11 +38,13 @@ install -Dm755 target/release/arexibo %{buildroot}%{_bindir}/arexibo
 install -Dm644 arexibo.desktop %{buildroot}%{_datadir}/applications/arexibo.desktop
 install -Dm644 assets/arexibo-256.png %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/arexibo.png
 install -Dm644 assets/logo.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/arexibo.svg
+install -Dm644 arexibo.service %{buildroot}%{_userunitdir}/arexibo.service
 
 %files
 %license LICENSE
 %doc README.md CHANGELOG.md
 %{_bindir}/arexibo
+%{_userunitdir}/arexibo.service
 %{_datadir}/applications/arexibo.desktop
 %{_datadir}/icons/hicolor/256x256/apps/arexibo.png
 %{_datadir}/icons/hicolor/scalable/apps/arexibo.svg
