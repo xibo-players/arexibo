@@ -67,7 +67,18 @@ impl Server {
             url => {
                 let parts = url.split('?').collect_vec();
                 let path = dir.join(&parts[0][1..]);
-                let ext = path.extension().and_then(|e| e.to_str());
+
+                // Prevent path traversal — verify resolved path stays inside cache dir
+                let canonical_dir = dir.canonicalize().unwrap_or_else(|_| dir.clone());
+                let canonical_path = match path.canonicalize() {
+                    Ok(p) if p.starts_with(&canonical_dir) => p,
+                    _ => {
+                        log::warn!("processing HTTP req {}: 403 path outside cache dir", req.url());
+                        return Ok(Response::empty(403).boxed());
+                    }
+                };
+
+                let ext = canonical_path.extension().and_then(|e| e.to_str());
 
                 let query_params = parts.get(1).map(|par| par.split('&').map(|p| {
                     let mut kv = p.split('=');
@@ -76,11 +87,11 @@ impl Server {
                     (k, v)
                 }).collect::<HashMap<_, _>>()).unwrap_or_default();
 
-                if !path.is_file() {
+                if !canonical_path.is_file() {
                     log::warn!("processing HTTP req {}: 404 not found", req.url());
                     return Ok(Response::empty(404).boxed());
                 }
-                let mut fp = fs::File::open(&path)?;
+                let mut fp = fs::File::open(&canonical_path)?;
 
                 // implement replacing [[ViewPortWidth]] by requested width
                 if ext == Some("html") && query_params.contains_key("w") {
