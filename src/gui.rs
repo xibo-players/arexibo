@@ -4,8 +4,9 @@
 //! Bindings to the C++/Qt GUI part of the application.
 
 use std::ffi::{c_void, CStr, CString};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use crossbeam_channel::{Sender, Receiver};
+use parking_lot::Mutex;
 use crate::config::PlayerSettings;
 use crate::mainloop::{ToGui, FromGui, Kill};
 use crate::resource::LayoutId;
@@ -52,7 +53,7 @@ pub fn run(settings: PlayerSettings, inspect: bool, debug: bool,
                     }
                 }
                 ToGui::Layouts(new_layouts) => {
-                    if let Some(id) = schedule.lock().unwrap().update(new_layouts) {
+                    if let Some(id) = schedule.lock().update(new_layouts) {
                         log::info!("new schedule, showing layout: {}", id);
                         let file = CString::new(format!("{}.xlf.html", id)).unwrap();
                         unsafe {
@@ -83,18 +84,18 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
     match typ {
         cpp::CB_SCREENSHOT => {
             let data = unsafe { std::slice::from_raw_parts(arg1 as *const u8, arg2 as usize) };
-            cb_data.sender.send(FromGui::Screenshot(data.to_vec())).unwrap();
+            let _ = cb_data.sender.send(FromGui::Screenshot(data.to_vec()));
         }
         cpp::CB_LAYOUT_INIT => {
             if arg1 > 0 {  // don't announce the splash screen
-                cb_data.sender.send(FromGui::Showing(arg1 as _)).unwrap();
+                let _ = cb_data.sender.send(FromGui::Showing(arg1 as _));
             }
         }
         cpp::CB_LAYOUT_NEXT => {
-            let mut schedule = cb_data.schedule.lock().unwrap();
+            let mut schedule = cb_data.schedule.lock();
             if let Some(id) = schedule.next() {
                 log::info!("showing next layout: {}", id);
-                let file = CString::new(format!("{}.xlf.html", id)).unwrap();
+                let file = CString::new(format!("{}.xlf.html", id)).expect("ok");
                 unsafe {
                     cpp::navigate(file.as_ptr());
                 }
@@ -103,9 +104,9 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
             }
         }
         cpp::CB_LAYOUT_PREV => {
-            if let Some(id) = cb_data.schedule.lock().unwrap().prev() {
+            if let Some(id) = cb_data.schedule.lock().prev() {
                 log::info!("showing previous layout: {}", id);
-                let file = CString::new(format!("{}.xlf.html", id)).unwrap();
+                let file = CString::new(format!("{}.xlf.html", id)).expect("ok");
                 unsafe {
                     cpp::navigate(file.as_ptr());
                 }
@@ -113,7 +114,7 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
         }
         cpp::CB_LAYOUT_JUMP => {
             log::info!("jumping to layout: {}", arg2);
-            let file = CString::new(format!("{}.xlf.html", arg2)).unwrap();
+            let file = CString::new(format!("{}.xlf.html", arg2)).expect("ok");
             unsafe {
                 cpp::navigate(file.as_ptr());
             }
@@ -123,9 +124,9 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
             let cmd = cmd.to_str().unwrap_or_default().to_owned();
             if typ == cpp::CB_SHELL {
                 let use_shell = arg2 != 0;
-                cb_data.sender.send(FromGui::Shell(cmd, use_shell)).unwrap();
+                let _ = cb_data.sender.send(FromGui::Shell(cmd, use_shell));
             } else {
-                cb_data.sender.send(FromGui::Command(cmd)).unwrap();
+                let _ = cb_data.sender.send(FromGui::Command(cmd));
             }
         }
         cpp::CB_STOPSHELL => {
@@ -134,7 +135,7 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
                 1 => Kill::Terminate,
                 _ => Kill::Kill,
             };
-            cb_data.sender.send(FromGui::StopShell(killmode)).unwrap();
+            let _ = cb_data.sender.send(FromGui::StopShell(killmode));
         }
         _ => {
             log::warn!("got unknown callback from Qt: {}", typ);
@@ -185,7 +186,7 @@ impl<T: Eq + Default + Clone> Schedule<T> {
             None
         } else {
             // otherwise just go further in the schedule
-            let new_index = (self.index.unwrap() + 1) % nlayouts;
+            let new_index = (self.index.expect("exists") + 1) % nlayouts;
             self.index = Some(new_index);
             Some(self.layouts[new_index].clone())
         }
@@ -199,7 +200,7 @@ impl<T: Eq + Default + Clone> Schedule<T> {
             None
         } else {
             // otherwise just go further in the schedule
-            let new_index = (self.index.unwrap() + nlayouts - 1) % nlayouts;
+            let new_index = (self.index.expect("exists") + nlayouts - 1) % nlayouts;
             self.index = Some(new_index);
             Some(self.layouts[new_index].clone())
         }
