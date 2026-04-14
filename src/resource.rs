@@ -104,7 +104,7 @@ impl Cache {
     pub fn new(cms: &CmsSettings, dir: PathBuf, clear: bool, no_verify: bool) -> Result<Self> {
         let mut content = HashMap::new();
 
-        if !fs::metadata(&dir).map_or(false, |p| p.is_dir()) {
+        if !fs::metadata(&dir).is_ok_and(|p| p.is_dir()) {
             // no directory? create it...
             fs::create_dir_all(&dir)?;
         } else if clear {
@@ -171,13 +171,13 @@ impl Cache {
     pub fn has(&self, res: &ReqFile) -> bool {
         match *res {
             ReqFile::Resource { id, updated, .. } => {
-                self.get_resource(id).map_or(false, |res| res.updated == updated)
+                self.get_resource(id).is_some_and(|res| res.updated == updated)
             }
             ReqFile::File { ref name, ref md5, typ, id, .. } => {
                 if typ == "layout" {
-                    self.get_layout(id).map_or(false, |res| &res.md5 == md5)
+                    self.get_layout(id).is_some_and(|res| &res.md5 == md5)
                 } else {
-                    self.get_media(name).map_or(false, |res| &res.md5 == md5)
+                    self.get_media(name).is_some_and(|res| &res.md5 == md5)
                 }
             }
         }

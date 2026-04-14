@@ -82,7 +82,7 @@ impl Handler {
 
         // create directory to store raw XML responses for debugging
         let xmldir = envdir.join("xml");
-        if !fs::metadata(&xmldir).map_or(false, |p| p.is_dir()) {
+        if !fs::metadata(&xmldir).is_ok_and(|p| p.is_dir()) {
             fs::create_dir_all(&xmldir)?;
         }
 
@@ -324,8 +324,7 @@ impl Handler {
     fn schedule_check(&mut self) {
         let new_layouts = self.schedule.layouts_now();
         if new_layouts != self.layouts {
-            log::info!("new layouts in schedule: {}",
-                       new_layouts.iter().format(", ").to_string());
+            log::info!("new layouts in schedule: {}", new_layouts.iter().format(", "));
             self.to_gui.send(ToGui::Layouts(new_layouts.clone())).unwrap();
             self.layouts = new_layouts;
         }

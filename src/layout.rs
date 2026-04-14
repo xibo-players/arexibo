@@ -406,7 +406,7 @@ impl<'a> Translator<'a> {
             }
             (_, Some("video")) | (_, Some("localvideo")) => {
                 let url = percent_decode(opts.find("uri").context("no video uri")?.text());
-                let mute = opts.find("mute").map_or(false, |el| el.text() == "1");
+                let mute = opts.find("mute").is_some_and(|el| el.text() == "1");
                 writeln!(self.out, "<video class='media r{rid}' id='m{mid}' src='{url}' {} \
                                     style='left: {x}px; top: {y}px; width: {w}px; \
                                     height: {h}px;{}{}'></video>",

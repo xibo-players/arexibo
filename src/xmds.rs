@@ -214,7 +214,7 @@ impl Cms {
         for ((typ, id), complete) in inv {
             let mut file = Element::new("file");
             file.set_attr("type", typ);
-            file.set_attr("id", &id.to_string());
+            file.set_attr("id", id.to_string());
             file.set_attr("complete", if complete { "1" } else { "0" });
             files.append_child(file);
         }
