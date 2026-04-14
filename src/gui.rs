@@ -28,12 +28,12 @@ pub fn run(settings: PlayerSettings, inspect: bool, debug: bool,
     let schedule = Arc::new(Mutex::new(Schedule::<LayoutId>::default()));
 
     let cb_data = CallbackData { sender: fromgui_2, schedule: schedule.clone() };
-    let cb_data = Box::leak(Box::new(cb_data)) as *mut _ as *mut c_void;
+    let cb_data = (Box::leak(Box::new(cb_data)) as *mut CallbackData).cast();
 
     let title = CString::new(settings.display_name).unwrap();
     let base_uri = CString::new(base_uri).unwrap();
     unsafe {
-        cpp::setup(base_uri.as_ptr(), inspect as _, debug as _, Some(callback), cb_data);
+        cpp::setup(base_uri.as_ptr(), inspect.into(), debug.into(), Some(callback), cb_data);
         cpp::set_title(title.as_ptr());
         cpp::set_size(settings.pos_x as _, settings.pos_y as _,
                       settings.size_x as _, settings.size_y as _);

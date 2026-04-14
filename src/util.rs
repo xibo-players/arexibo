@@ -198,7 +198,7 @@ pub fn timezone() -> String {
             return path[pos + "/zoneinfo/".len()..].into();
         }
     }
-    Default::default()
+    String::new()
 }
 
 #[cfg(test)]

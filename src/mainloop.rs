@@ -69,16 +69,16 @@ pub struct Handler {
 
 impl Handler {
     /// Create a new handler, with channels to the GUI thread.
-    pub fn new(cms: CmsSettings, clear_cache: bool, envdir: &Path,
+    pub fn new(cms: &CmsSettings, clear_cache: bool, envdir: &Path,
                no_verify: bool, allow_offline: bool,
                to_gui: Sender<ToGui>, from_gui: Receiver<FromGui>) -> Result<Self> {
         let (privkey, pubkey) = load_or_create_keypair(envdir)?;
-        let cache = Cache::new(&cms, envdir.join("res"), clear_cache, no_verify)
+        let cache = Cache::new(cms, envdir.join("res"), clear_cache, no_verify)
             .context("creating cache")?;
         let setting_file = envdir.join("settings.json");
         let sched_file = envdir.join("sched.json");
         let mut schedule = Schedule::default();
-        let layouts = Default::default();
+        let layouts = vec![];
 
         // create directory to store raw XML responses for debugging
         let xmldir = envdir.join("xml");
@@ -87,7 +87,7 @@ impl Handler {
         }
 
         // make an initial register call, in order to get player settings
-        let mut xmds = xmds::Cms::new(&cms, pubkey, no_verify, xmldir)?;
+        let mut xmds = xmds::Cms::new(cms, pubkey, no_verify, xmldir)?;
         log::info!("doing initial register call to CMS");
 
         // try initial register call
@@ -117,7 +117,7 @@ impl Handler {
         // if we got settings, we are registered and authorized
         if let Some(settings) = res {
             // create the XMR manager which sends us updates via channel
-            let (manager, xmr) = xmr::Manager::new(&cms, &settings.xmr_network_address, privkey)?;
+            let (manager, xmr) = xmr::Manager::new(cms, &settings.xmr_network_address, privkey)?;
             thread::spawn(|| manager.run());
 
             settings.to_file(&setting_file).context("writing player settings")?;
@@ -198,7 +198,7 @@ impl Handler {
                     Ok(FromGui::Command(code)) =>
                         self.run_command(&code),
                     Ok(FromGui::Shell(code, with_shell)) =>
-                        self.run_shell(code, with_shell),
+                        self.run_shell(&code, with_shell),
                     Ok(FromGui::StopShell(kill_mode)) => {
                         if let Some(mut child) = self.shell_process.take() {
                             match kill_mode {
@@ -231,11 +231,11 @@ impl Handler {
     }
 
     /// Run a shell command, triggered from layout.
-    fn run_shell(&mut self, code: String, with_shell: bool) {
+    fn run_shell(&mut self, code: &str, with_shell: bool) {
         let config = Default::default();
         let res = if with_shell {
-            Popen::create(&["/bin/sh", "-c", &code], config)
-        } else if let Some(parts) = shlex::split(&code) {
+            Popen::create(&["/bin/sh", "-c", code], config)
+        } else if let Some(parts) = shlex::split(code) {
             Popen::create(&parts, config)
         } else {
             log::error!("invalid command line: {code}");
@@ -284,7 +284,7 @@ impl Handler {
                 match self.cache.download(file, &mut self.xmds)
                                 .with_context(|| format!("downloading {filedesc}"))
                 {
-                    Ok(_) => result.push((inventory, true)),
+                    Ok(()) => result.push((inventory, true)),
                     Err(e) => {
                         log::error!("{e:#}");
                         result.push((inventory, false));
@@ -314,7 +314,7 @@ impl Handler {
             deviceName: &self.settings.display_name,
             timeZone: &util::timezone(),
         };
-        self.xmds.notify_status(status)?;
+        self.xmds.notify_status(&status)?;
 
         log::info!("collection successful");
         Ok(())

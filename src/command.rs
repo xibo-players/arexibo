@@ -30,12 +30,12 @@ impl Command {
             self.run_shell()?
         };
 
-        if !self.validate.is_empty() {
+        if self.validate.is_empty() {
+            Ok(true)
+        } else {
             log::info!("validating command result {result:?} against {:?}", self.validate);
             let rx = regex::Regex::new(&self.validate).context("invalid validation Regex")?;
             Ok(rx.is_match(&result))
-        } else {
-            Ok(true)
         }
     }
 
@@ -92,10 +92,8 @@ impl Command {
             _ => bail!("invalid RS232 parity")
         };
         let stop = match stop {
-            "None" => serialport::StopBits::One,
-            "One" => serialport::StopBits::One,
-            "OnePointFive" => serialport::StopBits::Two,
-            "Two" => serialport::StopBits::Two,
+            "None" | "One" => serialport::StopBits::One,
+            "OnePointFive" | "Two" => serialport::StopBits::Two,
             _ => bail!("invalid RS232 stop bits")
         };
         let handshake = match handshake {

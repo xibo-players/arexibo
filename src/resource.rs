@@ -211,15 +211,15 @@ impl Cache {
                 let filename = self.dir.join(&name);
                 if http {
                     match self.download_http(&path, &filename, &md5) {
-                        Ok(_) => {},
+                        Ok(()) => {},
                         Err(e) => {
-                            log::warn!("failing download of {} over http, retrying \
-                                        xmds: {:#}", name, e);
-                            self.download_xmds(id, typ, size, cms, &filename, &md5)?
+                            log::warn!("failing download of {name} over http, retrying \
+                                        xmds: {e:#}");
+                            Self::download_xmds(id, typ, size, cms, &filename, &md5)?;
                         }
                     }
                 } else {
-                    self.download_xmds(id, typ, size, cms, &filename, &md5)?
+                    Self::download_xmds(id, typ, size, cms, &filename, &md5)?;
                 }
 
                 if typ == "layout" {
@@ -256,7 +256,7 @@ impl Cache {
         Ok(())
     }
 
-    fn download_xmds(&mut self, id: i64, typ: &str, size: u64, cms: &mut xmds::Cms,
+    fn download_xmds(id: i64, typ: &str, size: u64, cms: &mut xmds::Cms,
                      filename: &PathBuf, md5: &[u8]) -> Result<()> {
         const CHUNK_SIZE: u64 = 1024 * 1024;
         let mut got_size = 0;

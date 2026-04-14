@@ -104,8 +104,7 @@ impl Server {
                 for h in req.headers() {
                     if h.field.equiv("Range") {
                         let total_size = fp.metadata()?.len();
-                        let (from, to, size) = parse_range(total_size,
-                                                           h.value.to_string())?;
+                        let (from, to, size) = parse_range(total_size, h.value.as_ref())?;
                         fp.seek(std::io::SeekFrom::Start(from))?;
                         let stream = fp.take(size);
 
@@ -126,7 +125,7 @@ impl Server {
                 // guess the MIME type based on filename
                 let ctype = match ext {
                     Some("html") => "text/html",
-                    Some("js") | Some("mjs") => "text/javascript",
+                    Some("js" | "mjs") => "text/javascript",
                     Some("ttf" | "otf") => "application/font-sfnt",
                     Some("jpg" | "jpeg") => "image/jpeg",
                     Some("png") => "image/png",
@@ -169,7 +168,7 @@ const SPLASH_JPG: &[u8] = include_bytes!("../assets/splash.jpg");
 
 
 /// Parse a HTTP Range header.
-fn parse_range(total_size: u64, header: String) -> Result<(u64, u64, u64)> {
+fn parse_range(total_size: u64, header: &str) -> Result<(u64, u64, u64)> {
     let mut parts = header.split(&['=', '-'][..]);
     let (from, to) = match parts.next_tuple() {
         Some(("bytes", from, to)) => {

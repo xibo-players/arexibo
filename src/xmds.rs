@@ -41,8 +41,8 @@ impl Cms {
                                                                 |name| name.to_owned()),
             mac_addr: retrieve_mac().unwrap_or_else(|| "00:00:00:00:00:00".into()),
             channel: cms.xmr_channel(),
-            cms_key: cms.key.to_owned(),
-            hw_key: cms.display_id.to_owned(),
+            cms_key: cms.key.clone(),
+            hw_key: cms.display_id.clone(),
             pub_key,
             xml_dir,
         })
@@ -123,7 +123,7 @@ impl Cms {
                     if typ == "layout" {
                         path.push_str(".xlf");
                     }
-                    ("".into(), path)
+                    (String::new(), path)
                 };
                 res.push(ReqFile::File {
                     id: file.parse_attr("id")?,
@@ -142,7 +142,7 @@ impl Cms {
                     regionid: file.parse_attr("regionid")?,
                     mediaid: file.parse_attr("mediaid")?,
                     updated: file.parse_attr("updated")?,
-                })
+                });
             } else {
                 continue;
             }
@@ -167,7 +167,7 @@ impl Cms {
         let _ = fs::write(self.xml_dir.join("schedule.xml"), &xml);
 
         let tree = Element::from_reader(&mut xml.as_bytes()).context("parsing schedule")?;
-        Schedule::parse(tree)
+        Schedule::parse(&tree)
     }
 
     pub fn get_file_data(&mut self, file: i64, ftype: &str, offset: u64, size: u64) -> Result<Vec<u8>> {
@@ -281,16 +281,16 @@ impl Cms {
         self.notify_status_raw(&format!("{{\"lastCommandSuccess\": {result}}}"))
     }
 
-    pub fn notify_status(&mut self, status: Status<'_>) -> Result<()> {
-        self.notify_status_raw(serde_json::to_string(&status)?)
+    pub fn notify_status(&mut self, status: &Status<'_>) -> Result<()> {
+        self.notify_status_raw(&serde_json::to_string(status)?)
     }
 
-    fn notify_status_raw(&mut self, status: String) -> Result<()> {
+    fn notify_status_raw(&mut self, status: &str) -> Result<()> {
         let res = self.service.NotifyStatus(
             soap::NotifyStatusRequest {
                 serverKey: &self.cms_key,
                 hardwareKey: &self.hw_key,
-                status: &status,
+                status,
             }
         ).context("notifying status")?;
         ensure!(res.success, "status notification not successful");

@@ -18,7 +18,7 @@ pub struct Schedule {
 }
 
 impl Schedule {
-    pub fn parse(tree: Element) -> Result<Self> {
+    pub fn parse(tree: &Element) -> Result<Self> {
         let tz_offset = OffsetDateTime::now_local().unwrap().offset();
         let mut schedules = Vec::new();
         for layout in tree.find_all("layout") {
@@ -57,7 +57,7 @@ impl Schedule {
                         cur_prio = prio;
                         layouts.clear();
                     }
-                    _ => ()
+                    Ordering::Equal => ()
                 }
                 layouts.push(lid);
             }

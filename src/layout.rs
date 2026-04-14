@@ -18,17 +18,17 @@ use crate::util::{ElementExt, percent_decode};
 
 pub const TRANSLATOR_VERSION: u32 = 10;
 
-const LAYOUT_CSS: &str = r#"
+const LAYOUT_CSS: &str = r##"
 body { margin: 0; background-repeat: no-repeat; overflow: hidden; }
 iframe { border: 0 }
 .media { position: absolute; visibility: hidden; }
 .pdf-canvas { display: block; }
 p { margin-top: 0; }
-"#;
+"##;
 
 /// Inline pdf.js rendering engine — loaded once per layout that contains a PDF widget.
 /// Renders pages to a canvas with timed cycling (duration / numPages per page).
-const PDF_SCRIPT: &str = r#"
+const PDF_SCRIPT: &str = r##"
 window.arexiboPdf = {
   _instances: {},
 
@@ -92,9 +92,9 @@ window.arexiboPdf = {
     delete this._instances[canvasId];
   }
 };
-"#;
+"##;
 
-const SCRIPT: &str = r#"
+const SCRIPT: &str = r##"
 new QWebChannel(qt.webChannelTransport, function(channel) {
   window.arexiboGui = channel.objects.arexibo;
   window.arexiboGui.jsLayoutInit(window.arexibo.id,
@@ -174,7 +174,7 @@ window.arexibo = {
     }
   },
 };
-"#;
+"##;
 
 
 type MediaInfo = (i32, String, String, String);
@@ -239,7 +239,7 @@ impl<'a> Translator<'a> {
         let layoutcode = el.def_attr("layoutCode", "<not set>");
         let mut layoutid = 0;
         if action == "navLayout" {
-            layoutid = self.code_map.get(layoutcode).cloned().context("unknown layout code")?;
+            layoutid = self.code_map.get(layoutcode).copied().context("unknown layout code")?;
         }
         if typ == "webhook" {
             writeln!(self.out, "window.arexibo.triggers[{code:?}] = {{")?;
@@ -369,8 +369,8 @@ impl<'a> Translator<'a> {
         let opts = media.find("options").context("no options")?;
         let mut duration = format!(
             "() => {}", media.def_attr("duration", "").parse::<i32>().unwrap_or(10));
-        let mut add_start = "".into();
-        let mut add_stop = "".into();
+        let mut add_start = String::new();
+        let mut add_stop = String::new();
         writeln!(self.out, "  <!-- media {mid} -->")?;
         match (media.get_attr("render"), media.get_attr("type")) {
             (Some("html"), _) |
@@ -404,7 +404,7 @@ impl<'a> Translator<'a> {
                                     height: {h}px;{}{}'>",
                          object_fit(opts), object_pos(opts))?;
             }
-            (_, Some("video")) | (_, Some("localvideo")) => {
+            (_, Some("video" | "localvideo")) => {
                 let url = percent_decode(opts.find("uri").context("no video uri")?.text());
                 let mute = opts.find("mute").is_some_and(|el| el.text() == "1");
                 writeln!(self.out, "<video class='media r{rid}' id='m{mid}' src='{url}' {} \

@@ -81,7 +81,7 @@ impl CmsSettings {
         hex::encode(Md5::digest(to_hash))
     }
 
-    /// Deterministic XMR channel ID: MD5(address + key + display_id)
+    /// Deterministic XMR channel ID: `MD5(address + key + display_id)`
     pub fn make_agent(&self, no_verify: bool) -> Result<ureq::Agent> {
         let tls_config = ureq::tls::TlsConfig::builder()
             .disable_verification(no_verify)

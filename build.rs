@@ -22,7 +22,7 @@ use ureq::Agent;
 use crate::util::Base64Field;
 ";
 
-const SERVICE_IMPL: &str = r###"pub struct Service {
+const SERVICE_IMPL: &str = r##"pub struct Service {
     baseuri: String,
     agent: Agent,
 }
@@ -55,7 +55,7 @@ impl Service {
             .into_body().read_to_string().with_context(|| format!("decoding {name} SOAP response"))?
             .parse().with_context(|| format!("parsing {name} SOAP response"))
     }
-"###;
+"##;
 
 fn main() {
     build_qtlib();
