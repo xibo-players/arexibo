@@ -142,7 +142,7 @@ fn convert_wsdl() {
             writeln!(out, r#"impl FromStr for {name} {{
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self> {{
-        let tree = Element::from_reader(&mut s.as_bytes()).context("XML parse")?;
+        let tree = Element::from_reader(&mut s.as_bytes()).with_context(|| format!("Invalid XML: {{:?}}", s))?;
         let tns = tree.get_child(0).and_then(|c| c.get_child(0))
                       .context("missing SOAP envelope")?;
         if tns.tag().name() != "{name}" {{
