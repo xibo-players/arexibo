@@ -49,7 +49,7 @@ impl Command {
     }
 
     fn run_http(&self) -> Result<String> {
-        let (_, url, content_type, opts) = self.command.split("|").collect_tuple()
+        let (_, url, content_type, opts) = self.command.split('|').collect_tuple()
             .context("invalid HTTP command string")?;
         let opts: HttpOpts = serde_json::from_str(opts)
             .context("invalid HTTP option dictionary")?;
@@ -73,10 +73,10 @@ impl Command {
     }
 
     fn run_rs232(&self) -> Result<String> {
-        let (_, params, msg) = self.command.split("|").collect_tuple()
+        let (_, params, msg) = self.command.split('|').collect_tuple()
             .context("invalid RS232 command string")?;
         let (dev, baud, bits, parity, stop, handshake, hex) =
-            params.split(",").collect_tuple().context("invalid RS232 param string")?;
+            params.split(',').collect_tuple().context("invalid RS232 param string")?;
         let baud = baud.parse().context("invalid RS232 baud rate")?;
         let bits = match bits {
             "5" => serialport::DataBits::Five,
@@ -115,7 +115,7 @@ impl Command {
 
         let data = if hex == "1" {
             let msg = msg.chars().filter(|&c| !c.is_whitespace()).collect::<String>();
-            hex::decode(&msg).context("invalid RS232 hex message")?
+            hex::decode(msg).context("invalid RS232 hex message")?
         } else {
             msg.as_bytes().to_vec()
         };

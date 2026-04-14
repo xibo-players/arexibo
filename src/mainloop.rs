@@ -129,7 +129,7 @@ impl Handler {
             slf.schedule_check();  // only useful in case of cached schedule
             Ok(slf)
         } else {
-            return Err(NotAuthorized.into());
+            Err(NotAuthorized.into())
         }
     }
 
@@ -235,13 +235,11 @@ impl Handler {
         let config = Default::default();
         let res = if with_shell {
             Popen::create(&["/bin/sh", "-c", &code], config)
+        } else if let Some(parts) = shlex::split(&code) {
+            Popen::create(&parts, config)
         } else {
-            if let Some(parts) = shlex::split(&code) {
-                Popen::create(&parts, config)
-            } else {
-                log::error!("invalid command line: {code}");
-                return;
-            }
+            log::error!("invalid command line: {code}");
+            return;
         };
         match res {
             Ok(child) => self.shell_process = Some(child),
