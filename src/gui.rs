@@ -54,8 +54,8 @@ pub fn run(settings: PlayerSettings, inspect: bool, debug: bool,
                 }
                 ToGui::Layouts(new_layouts) => {
                     if let Some(id) = schedule.lock().update(new_layouts) {
-                        log::info!("new schedule, showing layout: {}", id);
-                        let file = CString::new(format!("{}.xlf.html", id)).unwrap();
+                        log::info!("new schedule, showing layout: {id}");
+                        let file = CString::new(format!("{id}.xlf.html")).unwrap();
                         unsafe {
                             cpp::navigate(file.as_ptr());
                         }
@@ -94,8 +94,8 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
         cpp::CB_LAYOUT_NEXT => {
             let mut schedule = cb_data.schedule.lock();
             if let Some(id) = schedule.next() {
-                log::info!("showing next layout: {}", id);
-                let file = CString::new(format!("{}.xlf.html", id)).expect("ok");
+                log::info!("showing next layout: {id}");
+                let file = CString::new(format!("{id}.xlf.html")).expect("ok");
                 unsafe {
                     cpp::navigate(file.as_ptr());
                 }
@@ -105,16 +105,16 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
         }
         cpp::CB_LAYOUT_PREV => {
             if let Some(id) = cb_data.schedule.lock().prev() {
-                log::info!("showing previous layout: {}", id);
-                let file = CString::new(format!("{}.xlf.html", id)).expect("ok");
+                log::info!("showing previous layout: {id}");
+                let file = CString::new(format!("{id}.xlf.html")).expect("ok");
                 unsafe {
                     cpp::navigate(file.as_ptr());
                 }
             }
         }
         cpp::CB_LAYOUT_JUMP => {
-            log::info!("jumping to layout: {}", arg2);
-            let file = CString::new(format!("{}.xlf.html", arg2)).expect("ok");
+            log::info!("jumping to layout: {arg2}");
+            let file = CString::new(format!("{arg2}.xlf.html")).expect("ok");
             unsafe {
                 cpp::navigate(file.as_ptr());
             }
@@ -138,7 +138,7 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
             let _ = cb_data.sender.send(FromGui::StopShell(killmode));
         }
         _ => {
-            log::warn!("got unknown callback from Qt: {}", typ);
+            log::warn!("got unknown callback from Qt: {typ}");
         }
     }
 }

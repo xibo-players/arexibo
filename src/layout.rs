@@ -260,16 +260,16 @@ impl<'a> Translator<'a> {
     fn write_header(&mut self, el: &Element) -> Result<()> {
         self.size = (el.parse_attr("width")?, el.parse_attr("height")?);
 
-        writeln!(self.out, "<!DOCTYPE html>\n<!-- VERSION={} -->", TRANSLATOR_VERSION)?;
+        writeln!(self.out, "<!DOCTYPE html>\n<!-- VERSION={TRANSLATOR_VERSION} -->")?;
         writeln!(self.out, "<html><head>")?;
         writeln!(self.out, "<meta charset='utf-8'>")?;
         writeln!(self.out, "<script src='qrc:///qtwebchannel/qwebchannel.js'></script>")?;
-        writeln!(self.out, "<script type='text/javascript'>{}\
+        writeln!(self.out, "<script type='text/javascript'>{SCRIPT}\
                             window.arexibo.id = {};\n\
                             window.arexibo.width = {};\n\
                             window.arexibo.height = {};\n\
-                            </script>", SCRIPT, self.id, self.size.0, self.size.1)?;
-        writeln!(self.out, "<style type='text/css'>{}", LAYOUT_CSS)?;
+                            </script>", self.id, self.size.0, self.size.1)?;
+        writeln!(self.out, "<style type='text/css'>{LAYOUT_CSS}")?;
 
         if let Some(file) = el.get_attr("background") {
             writeln!(self.out, "body {{ background-image: url('{file}'); \
@@ -287,7 +287,7 @@ impl<'a> Translator<'a> {
             writeln!(self.out, "pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.min.mjs';")?;
             writeln!(self.out, "window.pdfjsLib = pdfjsLib;")?;
             writeln!(self.out, "</script>")?;
-            writeln!(self.out, "<script type='text/javascript'>{}</script>", PDF_SCRIPT)?;
+            writeln!(self.out, "<script type='text/javascript'>{PDF_SCRIPT}</script>")?;
         }
         writeln!(self.out, "</head><body>")?;
         Ok(())
@@ -312,7 +312,7 @@ impl<'a> Translator<'a> {
         let w = region.parse_attr("width")?;
         let h = region.parse_attr("height")?;
         let geom = [x, y, w, h];
-        writeln!(self.out, "<!-- region {} -->", rid)?;
+        writeln!(self.out, "<!-- region {rid} -->")?;
 
         if let Some(zindex) = region.get_attr("zindex") {
             writeln!(self.out, "<style type='text/css'> \
@@ -412,8 +412,8 @@ impl<'a> Translator<'a> {
                                     height: {h}px;{}{}'></video>",
                          if mute { "muted" } else { "" },
                          object_fit(opts), object_pos(opts))?;
-                add_start = format!("document.getElementById('m{}').play();", mid);
-                duration = format!("() => document.getElementById('m{}').duration", mid);
+                add_start = format!("document.getElementById('m{mid}').play();");
+                duration = format!("() => document.getElementById('m{mid}').duration");
             }
             (_, Some("shellcommand")) => {
                 writeln!(self.out, "<div class='media r{rid}' id='m{mid}' \

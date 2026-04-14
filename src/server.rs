@@ -109,7 +109,7 @@ impl Server {
                         fp.seek(std::io::SeekFrom::Start(from))?;
                         let stream = fp.take(size);
 
-                        let range = format!("bytes {}-{}/{}", from, to, total_size);
+                        let range = format!("bytes {from}-{to}/{total_size}");
                         return Ok(Response::new(
                             StatusCode(206),
                             vec![

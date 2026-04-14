@@ -40,8 +40,8 @@ pub enum ReqFile {
 impl ReqFile {
     pub fn description(&self) -> String {
         match self {
-            ReqFile::File { typ, name, .. } => format!("{} {}", typ, name),
-            ReqFile::Resource { mediaid, .. } => format!("resource {}", mediaid)
+            ReqFile::File { typ, name, .. } => format!("{typ} {name}"),
+            ReqFile::Resource { mediaid, .. } => format!("resource {mediaid}")
         }
     }
 
@@ -188,7 +188,7 @@ impl Cache {
             ReqFile::Resource { id, layoutid, regionid, mediaid, updated } => {
                 let data = cms.get_resource(layoutid, &regionid.to_string(),
                                             &mediaid.to_string())?;
-                let fname = format!("{}.html", id);
+                let fname = format!("{id}.html");
 
                 // TODO: re-download after given updateInterval
                 let duration = data.find("<!-- DURATION=").and_then(|index| {
@@ -227,7 +227,7 @@ impl Cache {
                     let xl = layout::Translator::new(
                         id,
                         &self.dir.join(&name),
-                        &self.dir.join(format!("{}.html", name)),
+                        &self.dir.join(format!("{name}.html")),
                         &self.code_map
                     )?;
                     let size = xl.translate()?;
@@ -282,7 +282,7 @@ impl Cache {
     }
 
     pub fn get_layout(&self, id: LayoutId) -> Option<Arc<LayoutInfo>> {
-        self.content.get(&format!("{}.xlf", id)).and_then(|entry| match entry {
+        self.content.get(&format!("{id}.xlf")).and_then(|entry| match entry {
             Resource::Layout(layout) => Some(layout.clone()),
             _ => None
         })
@@ -296,7 +296,7 @@ impl Cache {
     }
 
     fn get_resource(&self, id: i64) -> Option<Arc<ResourceInfo>> {
-        self.content.get(&format!("{}.html", id)).and_then(|entry| match entry {
+        self.content.get(&format!("{id}.html")).and_then(|entry| match entry {
             Resource::Resource(res) => Some(res.clone()),
             _ => None
         })

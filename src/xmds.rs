@@ -278,7 +278,7 @@ impl Cms {
     }
 
     pub fn notify_command_success(&mut self, result: bool) -> Result<()> {
-        self.notify_status_raw(format!("{{\"lastCommandSuccess\": {}}}", result))
+        self.notify_status_raw(&format!("{{\"lastCommandSuccess\": {result}}}"))
     }
 
     pub fn notify_status(&mut self, status: Status<'_>) -> Result<()> {

@@ -282,7 +282,7 @@ impl Handler {
                 let inventory = file.inventory();
                 log::info!("downloading required file {}/{}: {}", i+1, total, filedesc);
                 match self.cache.download(file, &mut self.xmds)
-                                .with_context(|| format!("downloading {}", filedesc))
+                                .with_context(|| format!("downloading {filedesc}"))
                 {
                     Ok(_) => result.push((inventory, true)),
                     Err(e) => {

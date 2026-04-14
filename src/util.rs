@@ -60,21 +60,21 @@ impl ElementExt for elementtree::Element {
     fn parse_attr<T: FromStr>(&self, attr: &str) -> Result<T>
         where T::Err: std::error::Error + Sync + Send + 'static
     {
-        self.get_attr(attr).with_context(|| format!("missing {}", attr))?
-                           .parse().with_context(|| format!("invalid {}", attr))
+        self.get_attr(attr).with_context(|| format!("missing {attr}"))?
+                           .parse().with_context(|| format!("invalid {attr}"))
     }
 
     fn req_child<'a>(&'a self, child: &'a str) -> Result<&'a str>
     {
-        Ok(self.find(child).with_context(|| format!("missing {}", child))?.text())
+        Ok(self.find(child).with_context(|| format!("missing {child}"))?.text())
     }
 
     fn parse_child<T: FromStr>(&self, child: &str) -> Result<T>
         where T::Err: std::error::Error + Sync + Send + 'static
     {
-        self.find(child).with_context(|| format!("missing {}", child))?
+        self.find(child).with_context(|| format!("missing {child}"))?
                         .text()
-                        .parse().with_context(|| format!("invalid {}", child))
+                        .parse().with_context(|| format!("invalid {child}"))
     }
 
     fn def_child<T: FromStr>(&self, child: &str, default: impl Into<T>) -> Result<T>
@@ -83,7 +83,7 @@ impl ElementExt for elementtree::Element {
         match self.find(child) {
             None => Ok(default.into()),
             Some(el) => el.text()
-                          .parse().with_context(|| format!("invalid {}", child))
+                          .parse().with_context(|| format!("invalid {child}"))
         }
     }
 }

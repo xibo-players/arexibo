@@ -34,7 +34,7 @@ impl Service {
 
     fn request<T: FromStr<Err = anyhow::Error> + fmt::Debug>(&mut self, name: &str, body: impl fmt::Display) -> Result<T>
     {
-        log::debug!("calling XMDS {}", name);
+        log::debug!("calling XMDS {name}");
         let data = format!(r#"
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
@@ -51,9 +51,9 @@ impl Service {
             .post(&self.baseuri)
             .config().http_status_as_error(false).build()
             .send(&data)
-            .with_context(|| format!("sending {} SOAP request", name))?
-            .into_body().read_to_string().with_context(|| format!("decoding {} SOAP response", name))?
-            .parse().with_context(|| format!("parsing {} SOAP response", name))
+            .with_context(|| format!("sending {name} SOAP request"))?
+            .into_body().read_to_string().with_context(|| format!("decoding {name} SOAP response"))?
+            .parse().with_context(|| format!("parsing {name} SOAP response"))
     }
 "###;
 
@@ -78,20 +78,20 @@ fn build_qtlib() {
             let libpart = line.split(" -lc ").nth(1).unwrap();
             let libs = shlex::split(libpart).unwrap();
             for lib in libs {
-                println!("cargo:rustc-link-arg={}", lib);
+                println!("cargo:rustc-link-arg={lib}");
             }
         }
     }
 }
 
 fn convert_wsdl() {
-    println!("cargo:rerun-if-changed={}", WSDLFILE);
+    println!("cargo:rerun-if-changed={WSDLFILE}");
     let tree = Element::from_reader(File::open(WSDLFILE).unwrap()).unwrap();
 
     let out_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap());
     let mut out = File::create(out_dir.join("xmds_soap.rs")).unwrap();
 
-    writeln!(out, "{}", HEADER).unwrap();
+    writeln!(out, "{HEADER}").unwrap();
 
     // Go through all messages
     for msg in tree.find_all(MESSAGE) {
@@ -116,21 +116,21 @@ fn convert_wsdl() {
         }
 
         // Write struct definition
-        writeln!(out, "#[derive(Debug)] pub struct {}{} {{",
-                 name, if is_req { "<'a>" } else { "" }).unwrap();
+        writeln!(out, "#[derive(Debug)] pub struct {name}{} {{",
+                 if is_req { "<'a>" } else { "" }).unwrap();
         for (_, rsname, _, rstype) in &msg_members {
-            writeln!(out, "    pub {}: {},", rsname, rstype).unwrap();
+            writeln!(out, "    pub {rsname}: {rstype},").unwrap();
         }
         writeln!(out, "}}\n").unwrap();
 
         if is_req {
             // Write serialization code if it's a request type
-            writeln!(out, r#"impl<'a> fmt::Display for {}<'a> {{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {{"#, name).unwrap();
+            writeln!(out, r#"impl<'a> fmt::Display for {name}<'a> {{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {{"#).unwrap();
 
             for (pname, rsname, xsdtype, _) in &msg_members {
-                writeln!(out, r#"        write!(f, "<{} xsi:type=\"{}\">{{}}</{}>", self.{})?;"#,
-                       pname, xsdtype, pname, rsname).unwrap();
+                writeln!(out, r#"        write!(f, "<{pname} xsi:type=\"{xsdtype}\">{{}}</{pname}>",
+                                                self.{rsname})?;"#).unwrap();
             }
 
             writeln!(out, r#"        Ok(())
@@ -139,24 +139,23 @@ fn convert_wsdl() {
 "#).unwrap();
         } else {
             // Write deserialization code if it's a response type
-            writeln!(out, r#"impl FromStr for {} {{
+            writeln!(out, r#"impl FromStr for {name} {{
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self> {{
         let tree = Element::from_reader(&mut s.as_bytes()).context("XML parse")?;
         let tns = tree.get_child(0).and_then(|c| c.get_child(0))
                       .context("missing SOAP envelope")?;
-        if tns.tag().name() != "{}" {{
+        if tns.tag().name() != "{name}" {{
             if tns.tag().name() == "Fault" {{
                 bail!("got SOAP fault: {{}}", tns.find("faultstring")
                                                  .map_or("no fault string", |fs| fs.text()));
-            }} else {{
-                bail!("got unexpected content tag: {{}}", tns.tag().name());
             }}
+            bail!("got unexpected content tag: {{}}", tns.tag().name());
         }}
-        Ok(Self {{"#, name, name).unwrap();
+        Ok(Self {{"#).unwrap();
             for (pname, rsname, _, _) in &msg_members {
-                writeln!(out, r#"            {}: tns.find("{}").context("missing {}")?.text().parse().context("parsing {}")?,"#,
-                       rsname, pname, pname, pname).unwrap();
+                writeln!(out, r#"            {rsname}: tns.find("{pname}").context("missing {pname}")?
+                                                       .text().parse().context("parsing {pname}")?,"#).unwrap();
             }
             writeln!(out, "        }})
     }}
@@ -165,7 +164,7 @@ fn convert_wsdl() {
     }
 
     // Write Service impl with methods for each operation
-    writeln!(out, "{}", SERVICE_IMPL).unwrap();
+    writeln!(out, "{SERVICE_IMPL}").unwrap();
 
     for ptype in tree.find_all(PORT_TYPE) {
         for port in ptype.find_all(OPERATION) {
@@ -177,8 +176,8 @@ fn convert_wsdl() {
                            .get_attr("message").unwrap()
                            .trim_start_matches("tns:");
 
-            writeln!(out, "    pub fn {}(&mut self, arg: {}) -> Result<{}> {{ self.request(\"{}\", arg) }}\n",
-                   name, inp, outp, name).unwrap();
+            writeln!(out, "    pub fn {name}(&mut self, arg: {inp}) -> Result<{outp}> {{
+                                   self.request(\"{name}\", arg) }}\n").unwrap();
         }
     }
 
