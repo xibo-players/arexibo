@@ -75,10 +75,10 @@ void Window::setSizeImpl(int pos_x, int pos_y, int size_x, int size_y)
 
     // need to scale Xibo values (meant to be real pixels) by the device pixel ratio
     auto ratio = screen()->devicePixelRatio();
-    pos_x /= ratio;
-    pos_y /= ratio;
-    size_x /= ratio;
-    size_y /= ratio;
+    pos_x = std::round(pos_x / ratio);
+    pos_y = std::round(pos_y / ratio);
+    size_x = std::round(size_x / ratio);
+    size_y = std::round(size_y / ratio);
 
     if (size_x == 0) size_x = screen_w;
     if (size_y == 0) size_y = screen_h;
@@ -109,8 +109,8 @@ void Window::adjustScale(int layout_w, int layout_h)
 
     // need to scale Xibo values (meant to be real pixels) by the device pixel ratio
     auto ratio = screen()->devicePixelRatio();
-    layout_w /= ratio;
-    layout_h /= ratio;
+    layout_w = std::round(layout_w / ratio);
+    layout_h = std::round(layout_h / ratio);
 
     int window_w = width();
     int window_h = height();
