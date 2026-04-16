@@ -340,6 +340,8 @@ impl Handler {
             "debug" => log::set_max_level(log::LevelFilter::Debug),
             "info" => log::set_max_level(log::LevelFilter::Info),
             "error" => log::set_max_level(log::LevelFilter::Warn),
+            "critical" | "alert" | "emergency" =>
+                log::set_max_level(log::LevelFilter::Error),
             "off" => log::set_max_level(log::LevelFilter::Off),
             s => log::error!("invalid log level {}", s)
         }
