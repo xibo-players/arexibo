@@ -71,9 +71,13 @@ impl Server {
 
                 let canonical_path = match path.canonicalize() {
                     Ok(p) if p.starts_with(&dir) => p,
-                    _ => {
+                    Ok(_) => {
                         log::warn!("processing HTTP req {}: 403 path outside cache dir", req.url());
                         return Ok(Response::empty(403).boxed());
+                    }
+                    Err(e) => {
+                        log::warn!("processing HTTP req {}: 404 canonicalize: {e}", req.url());
+                        return Ok(Response::empty(404).boxed());
                     }
                 };
                 let ext = canonical_path.extension().and_then(|e| e.to_str());
