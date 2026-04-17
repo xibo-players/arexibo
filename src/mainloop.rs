@@ -334,17 +334,6 @@ impl Handler {
     fn update_settings(&mut self) {
         // let the GUI know to reconfigure itself
         self.to_gui.send(ToGui::Settings(self.settings.clone())).unwrap();
-
-        match &*self.settings.log_level {
-            "trace" => log::set_max_level(log::LevelFilter::Trace),
-            "debug" => log::set_max_level(log::LevelFilter::Debug),
-            "info" => log::set_max_level(log::LevelFilter::Info),
-            "error" => log::set_max_level(log::LevelFilter::Warn),
-            "critical" | "alert" | "emergency" =>
-                log::set_max_level(log::LevelFilter::Error),
-            "off" => log::set_max_level(log::LevelFilter::Off),
-            s => log::error!("invalid log level {}", s)
-        }
     }
 }
 

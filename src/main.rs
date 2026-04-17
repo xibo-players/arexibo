@@ -55,6 +55,9 @@ struct Args {
     /// Clear the local file cache and re-download any files.
     #[arg(long)]
     clear: bool,
+    /// Enable debug logging.
+    #[arg(long)]
+    debug: bool,
     /// Disable HTTPS certificate verification.
     #[arg(long)]
     no_verify: bool,
@@ -83,6 +86,12 @@ fn main_inner() -> anyhow::Result<()> {
     log::info!("Arexibo {} starting up...", clap::crate_version!());
 
     let args = Args::parse();
+
+    if args.debug {
+        log::set_max_level(log::LevelFilter::Debug);
+    } else {
+        log::set_max_level(log::LevelFilter::Info);
+    }
 
     // check environment directory argument
     ensure!(args.envdir.exists(), "environment directory '{}' does not exist",
