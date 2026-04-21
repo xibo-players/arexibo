@@ -358,6 +358,14 @@ impl<W> HashingWriter<W> {
 impl<W> Write for HashingWriter<W> where W: Write {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let len = self.writer.write(buf)?;
+        // TODO(scaffold #28, audit 2026-04-21): hash only &buf[..len], not
+        // the full input buffer. Short writes (len < buf.len()) contaminate
+        // the running MD5 with trailing unwritten bytes, producing silent
+        // corruption — the file integrity check rejects any resource
+        // download that happened to short-write.
+        // Fix: self.hasher.update(&buf[..len]);
+        // Out-of-scope tonight: change-of-behaviour, needs its own PR with
+        // a regression test.
         self.hasher.update(buf);
         Ok(len)
     }
