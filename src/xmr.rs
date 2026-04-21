@@ -40,6 +40,14 @@ impl Manager {
         let socket = context.socket(zmq::SUB).context("creating XMR socket")?;
         socket.connect(connect).context("connecting XMR socket")?;
         socket.set_linger(0)?;
+        // TODO(scaffold #31, audit 2026-04-21): without a recv timeout,
+        // recv_msg blocks forever if the XMR publisher goes away silently
+        // (CMS restart, network drop). Player wedges on the next heartbeat
+        // window and never reconnects.
+        // Fix: socket.set_rcvtimeo(30_000)?;
+        // 30s matches the CMS heartbeat cadence. Out-of-scope tonight:
+        // change-of-behaviour, needs its own PR with a regression test
+        // that exercises the reconnect path after a publisher drop.
         socket.set_subscribe(channel.as_bytes())?;
         socket.set_subscribe(HEARTBEAT)?;
         let (sender, receiver) = unbounded();
