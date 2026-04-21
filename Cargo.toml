@@ -27,7 +27,7 @@ hex = "0.4"
 itertools = "0.14"
 log = "0.4"
 nix = { version = "0.31", features = ["fs", "hostname"] }
-rand = "0.8"
+rand = "0.10"
 dbus = "0.9"
 
 # crypto
