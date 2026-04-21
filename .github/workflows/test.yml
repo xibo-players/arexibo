@@ -33,6 +33,14 @@ jobs:
         with:
           components: clippy
 
+      - name: Force rustup stable on PATH (ubuntu-latest ships old system cargo)
+        # Without this, `cargo build` invokes /usr/bin/cargo (1.75) which
+        # doesn't support edition2024 and breaks on modern crates.
+        run: |
+          rustup default stable
+          rustup show
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: Cache cargo build artifacts
         uses: Swatinem/rust-cache@v2
 
