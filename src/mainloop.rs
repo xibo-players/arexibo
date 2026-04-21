@@ -339,6 +339,12 @@ impl Handler {
             "trace" => log::set_max_level(log::LevelFilter::Trace),
             "debug" => log::set_max_level(log::LevelFilter::Debug),
             "info" => log::set_max_level(log::LevelFilter::Info),
+            // TODO(scaffold #29, audit 2026-04-21): "error" should map to
+            // LevelFilter::Error, not Warn. Today setting log_level=error
+            // in the CMS still produces warnings in the log — operators
+            // who want error-only get error+warn instead.
+            // Fix: log::LevelFilter::Error (and add "warn" => Warn arm).
+            // Out-of-scope tonight: change-of-behaviour.
             "error" => log::set_max_level(log::LevelFilter::Warn),
             "off" => log::set_max_level(log::LevelFilter::Off),
             s => log::error!("invalid log level {}", s)
