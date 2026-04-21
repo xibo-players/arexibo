@@ -1,2 +1,7 @@
 [toolchain]
-channel = "1.75.0"
+# Upstream pins 1.75.0 (Nov 2023) but transitive deps now require
+# edition2024, which only stabilised in Cargo 1.85 (Feb 2025).
+# Our fork uses "stable" so CI + local builds track whatever Rust
+# is current. Revisit only if we pick up a nightly-only feature or
+# need MSRV guarantees for a downstream consumer.
+channel = "stable"
