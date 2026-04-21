@@ -70,7 +70,7 @@ impl Server {
                 let path = dir.join(&parts[0][1..]);
 
                 let canonical_path = match path.canonicalize() {
-                    Ok(p) if p.starts_with(&dir) => p,
+                    Ok(p) if p.starts_with(dir) => p,
                     Ok(_) => {
                         log::warn!("processing HTTP req {}: 403 path outside cache dir", req.url());
                         return Ok(Response::empty(403).boxed());
