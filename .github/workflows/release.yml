@@ -5,6 +5,9 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   release:
     uses: xibo-players/.github/.github/workflows/create-release.yml@5c3b3699cd05c12bb3ec76e5d1d317d539dd69b4  # main
