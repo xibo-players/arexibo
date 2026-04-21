@@ -333,7 +333,7 @@ impl Handler {
     fn schedule_check(&mut self) {
         let new_layouts = self.schedule.layouts_now();
         if new_layouts != self.layouts {
-            log::info!("new layouts in schedule: {}", new_layouts.iter().format(", ").to_string());
+            log::info!("new layouts in schedule: {}", new_layouts.iter().format(", "));
             self.to_gui.send(ToGui::Layouts(new_layouts.clone())).unwrap();
             self.layouts = new_layouts;
         }
