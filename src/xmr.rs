@@ -3,7 +3,7 @@
 
 //! Receive, decrypt and handle incoming XMR messages from CMS.
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use rsa::RsaPrivateKey;
@@ -40,14 +40,12 @@ impl Manager {
         let socket = context.socket(zmq::SUB).context("creating XMR socket")?;
         socket.connect(connect).context("connecting XMR socket")?;
         socket.set_linger(0)?;
-        // TODO(scaffold #31, audit 2026-04-21): without a recv timeout,
-        // recv_msg blocks forever if the XMR publisher goes away silently
-        // (CMS restart, network drop). Player wedges on the next heartbeat
-        // window and never reconnects.
-        // Fix: socket.set_rcvtimeo(30_000)?;
-        // 30s matches the CMS heartbeat cadence. Out-of-scope tonight:
-        // change-of-behaviour, needs its own PR with a regression test
-        // that exercises the reconnect path after a publisher drop.
+        // 30s receive timeout matches the CMS heartbeat cadence.
+        // Without a timeout, recv_msg blocks forever if the publisher
+        // goes away silently (CMS restart, network drop), and the
+        // player wedges on the next heartbeat window and never
+        // reconnects. Fixes #31.
+        socket.set_rcvtimeo(30_000)?;
         socket.set_subscribe(channel.as_bytes())?;
         socket.set_subscribe(HEARTBEAT)?;
         let (sender, receiver) = unbounded();
@@ -69,12 +67,22 @@ impl Manager {
     }
 
     fn process_msg(&mut self) -> Result<()> {
+        // Fixes #26: don't panic on a malformed XMR frame. A malicious or
+        // truncated publisher could otherwise take the whole player down
+        // with a single bad message. bail! lets the run-loop log the
+        // error and stay alive for the next recv.
         let channel = self.socket.recv_msg(0)?;
-        assert!(channel.get_more());
+        if !channel.get_more() {
+            bail!("malformed XMR frame: expected multi-part, channel is terminal");
+        }
         let key = self.socket.recv_msg(0)?;
-        assert!(key.get_more());
+        if !key.get_more() {
+            bail!("malformed XMR frame: expected multi-part, key is terminal");
+        }
         let content = self.socket.recv_msg(0)?;
-        assert!(!content.get_more());
+        if content.get_more() {
+            bail!("malformed XMR frame: expected 3 parts, content has more");
+        }
         if &*channel != HEARTBEAT {
             let json_msg = JsonMessage::new(&self.private_key, &key, &content)?;
             log::debug!("got XMR message: {:?}", json_msg);
