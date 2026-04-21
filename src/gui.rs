@@ -132,7 +132,13 @@ extern "C" fn callback(ptr: *mut c_void, typ: isize, arg1: isize, arg2: isize, _
             }
         }
         cpp::CB_STOPSHELL => {
-            let killmode = match arg2 & 0xff {
+            // Fixes #30: read arg1, not arg2. gui/view.cpp:184 passes
+            // kill_mode as the third cb() parameter →
+            //   cb(ptr, CB_STOPSHELL, kill_mode, 0, 0)
+            // which arrives here as arg1. arg2 is always 0, so every
+            // stop was collapsing to Kill::No and shells never
+            // terminated.
+            let killmode = match arg1 & 0xff {
                 0 => Kill::No,
                 1 => Kill::Terminate,
                 _ => Kill::Kill,
