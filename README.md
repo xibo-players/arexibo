@@ -13,7 +13,15 @@ unless tested.
 
 ## Installation
 
-Currently, no binary builds are provided.
+Binary builds are published on every tagged release:
+
+* **RPM** (Fedora/RHEL) and **DEB** (Debian/Ubuntu) packages, produced by
+  the `rpm.yml` and `deb.yml` GitHub Actions workflows on tag pushes.
+* **SRPMs** are published alongside the GitHub Releases assets so you can
+  rebuild from source without running the full Cargo toolchain directly.
+
+Install from the xiboplayer package repos listed at
+<https://xibo-players.github.io/>.
 
 To build from source, you need:
 
